@@ -1,9 +1,13 @@
-package algd2_linkedlist;
+package algd2;
 
 import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import algd2.DLinkedList;
+import algd2.IList;
+import algd2.ListItem;
 
 public class DLinkedListTest2 {
 	private IList<Integer> list1, list2;

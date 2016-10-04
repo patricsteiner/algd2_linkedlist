@@ -1,6 +1,6 @@
 // Created by Luzius on Feb 15, 2014
 
-package algd2_linkedlist;
+package algd2;
 
 public class Clock {
 	private static final int NSperMS = 1000000;

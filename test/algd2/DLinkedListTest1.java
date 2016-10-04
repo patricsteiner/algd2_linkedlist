@@ -1,4 +1,4 @@
-package algd2_linkedlist;
+package algd2;
 
 import static org.junit.Assert.*;
 
@@ -9,7 +9,10 @@ import java.util.ListIterator;
 import org.junit.Before;
 import org.junit.Test;
 
-import algd2_linkedlist.Clock;
+import algd2.Clock;
+import algd2.DLinkedList;
+import algd2.IList;
+import algd2.ListItem;
 
 public class DLinkedListTest1 {
 	private final int Size = 10000000;

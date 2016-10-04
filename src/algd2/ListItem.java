@@ -1,4 +1,4 @@
-package algd2_linkedlist;
+package algd2;
 
 public class ListItem {
 
