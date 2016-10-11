@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import algd2.DLinkedList;
 import algd2.IList;
-import algd2.ListItem;
+import algd2.DLinkedList.ListItem;
 
 public class DLinkedListTest2 {
 	private IList<Integer> list1, list2;
