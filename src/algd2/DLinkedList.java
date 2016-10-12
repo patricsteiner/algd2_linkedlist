@@ -6,7 +6,7 @@ import java.util.List;
 
 public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
-	public class ListItem<E> {
+	public final class ListItem<E> {
 		private DLinkedList<E> parent;
 		private ListItem<E> next;
 		private ListItem<E> prev;
@@ -26,7 +26,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	private ListItem<E> head;
 	private ListItem<E> tail;
 	
-	public void linkInFront(ListItem<E> item) {
+	public final void linkInFront(ListItem<E> item) {
 		assert item != null;
 		addMember(item);
 		if (head != null) {
@@ -41,11 +41,11 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		size++;
 	}
 	
-	public void linkInBack(ListItem<E> item) {
+	public final void linkInBack(ListItem<E> item) {
 		linkInAfter(tail, item);
 	}
 	
-	public void linkInAfter(ListItem<E> prev, ListItem<E> item) {
+	public final void linkInAfter(ListItem<E> prev, ListItem<E> item) {
 		assert item != null && prev != null;
 		if (!checkMembership(prev)) {
 			throw new IllegalArgumentException("Prev must belong to this list.");
@@ -64,7 +64,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		size++;
 	}
 	
-	public ListItem<E> unlink(ListItem<E> item) {
+	public final ListItem<E> unlink(ListItem<E> item) {
 		assert item != null;
 		if (!checkMembership(item)) {
 			throw new IllegalArgumentException("Item must belong to this list.");
@@ -99,7 +99,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	
 	@Override
 	public boolean checkMembership(ListItem item) {
-		return item.parent == this;
+		return item != null && item.parent == this;
 	}
 
 	@Override
@@ -114,14 +114,14 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem next(ListItem item) {
-		// TODO Auto-generated method stub
-		return null;
+		assert checkMembership(item);
+	    return item.next;
 	}
 
 	@Override
 	public ListItem previous(ListItem item) {
-		// TODO Auto-generated method stub
-		return null;
+	    assert checkMembership(item);
+	    return item.prev;
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public void reverse() {
-		// TODO Auto-generated method stub
+		linkInFront(tail);
 		
 	}
 
@@ -274,13 +274,14 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	@Override
 	public String toString() {
 		ListItem<E> i = head;
-		String s = "[";
-		while(i != null){
-			s += i.data + ", ";
+		StringBuilder sb = new StringBuilder("[");
+		while(i != null) {
+			sb.append(i.data).append(", ");
 			i = i.next;
 		}
-		s += "]";
-		return s;
+		if (sb.length() > 1) sb.delete(sb.length() - 2, sb.length());
+		sb.append("]");
+		return sb.toString();
 	}
 
 }
