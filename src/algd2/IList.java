@@ -1,6 +1,8 @@
 package algd2;
 
 import java.util.List;
+import algd2.DLinkedList.ListItem;
+
 
 /**
  * Very helpful linked list operations for lists with public list items.

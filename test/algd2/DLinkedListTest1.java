@@ -12,7 +12,7 @@ import org.junit.Test;
 import algd2.Clock;
 import algd2.DLinkedList;
 import algd2.IList;
-import algd2.ListItem;
+import algd2.DLinkedList.ListItem;
 
 public class DLinkedListTest1 {
 	private final int Size = 10000000;
