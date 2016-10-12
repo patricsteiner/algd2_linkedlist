@@ -3,7 +3,6 @@ package algd2;
 import java.util.AbstractList;
 import java.util.List;
 
-import sun.text.resources.cldr.bn.FormatData_bn_IN;
 
 public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
@@ -12,6 +11,9 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		private ListItem<E> next;
 		private ListItem<E> prev;
 		private E data;
+		private ListItem(E data) {
+			this.data = data;
+		}
 		private ListItem(DLinkedList<E> parent, ListItem<E> next, ListItem<E> prev, E data) {
 			this.parent = parent;
 			this.next = next;
@@ -27,8 +29,13 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	public void linkInFront(ListItem<E> item) {
 		assert item != null;
 		addMember(item);
-		head.prev = item;
-		item.next = head;
+		if (head != null) {
+			head.prev = item;
+			item.next = head;
+		} else {
+			tail = item;
+			item.next = null;
+		}
 		item.prev = null;
 		head = item;
 		size++;
@@ -40,14 +47,17 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	
 	public void linkInAfter(ListItem<E> prev, ListItem<E> item) {
 		assert item != null && prev != null;
+		if (!checkMembership(prev)) {
+			throw new IllegalArgumentException("Prev must belong to this list.");
+		}
 		addMember(item);
 		if (prev.next != null) {
 			prev.next.prev = item;
 			item.next = prev.next;
 		}
 		else {
-			head = item;
 			item.next = null;
+			tail = item;
 		}
 		item.prev = prev;
 		prev.next = item;
@@ -56,15 +66,20 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	
 	public ListItem<E> unlink(ListItem<E> item) {
 		assert item != null;
+		if (!checkMembership(item)) {
+			throw new IllegalArgumentException("Item must belong to this list.");
+		}
 		if (item.prev != null && item.next != null) {
 			item.prev.next = item.next;
 			item.next.prev = item.prev;
 		}
 		else if (item.prev != null) {
 			item.prev.next = null;
+			tail = item.prev;
 		}
 		else if (item.next != null) {
 			item.next.prev = null;
+			head = item.next;
 		}
 		item.parent = null;
 		item.prev = null;
@@ -153,20 +168,23 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem addHead(E data) {
-		// TODO Auto-generated method stub
-		return null;
+		ListItem<E> item = new ListItem<>(data);
+		linkInFront(item);
+		return item;
 	}
 
 	@Override
 	public ListItem addTail(E data) {
-		// TODO Auto-generated method stub
-		return null;
+		ListItem<E> item = new ListItem<>(data);
+		linkInBack(item);
+		return item;
 	}
 
 	@Override
 	public ListItem addAfter(ListItem item, E data) {
-		// TODO Auto-generated method stub
-		return null;
+		ListItem<E> newitem = new ListItem<>(data);
+		linkInAfter(item, newitem);
+		return newitem;
 	}
 
 	@Override
@@ -251,6 +269,18 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	public int size() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	@Override
+	public String toString() {
+		ListItem<E> i = head;
+		String s = "[";
+		while(i != null){
+			s += i.data + ", ";
+			i = i.next;
+		}
+		s += "]";
+		return s;
 	}
 
 }

@@ -17,14 +17,22 @@ public class DLinkedListTest3 {
 	public void setUp() throws Exception {
 		l1 = new DLinkedList<>();
 		l2 = new DLinkedList<>();
-		for (int i = 0; i < 10; i++) {
-			l1.add(i);
+		for (int i = 9; i >= 0; i--) {
+			l1.addHead(i);
+			l2.addHead(i+10);
 		}
 	}
 
 	@Test
 	public void testLinkInFront() {
-		l1.linkInFront(l2.head());
+		
+		l1.linkInAfter(l1.head(), l2.unlink(l2.head()));
+		l1.linkInAfter(l1.head(), l2.unlink(l2.head()));
+		l1.linkInAfter(l1.head(), l2.unlink(l2.head()));
+		
+		System.out.println(l1);
+		System.out.println(l2);
+		
 		
 	}
 
