@@ -114,7 +114,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem next(ListItem item) {
-		if(item.parent.equals(this)){ // item is in this list
+		if(checkMembership(item)){
 			if(this.tail.equals(item)){
 				return null;
 			} else {
@@ -126,7 +126,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem previous(ListItem item) {
-		if(item.parent.equals(this)){
+		if(checkMembership(item)){
 			if(this.head.equals(item)){
 				return null;
 			} else {
@@ -138,25 +138,69 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem cyclicNext(ListItem item) {
-		// TODO Auto-generated method stub
+		if(checkMembership(item)){
+			if(tail.equals(item)){
+				return head;
+			} else {
+				return next(item);
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public ListItem cyclicPrevious(ListItem item) {
-		// TODO Auto-generated method stub
+		if(checkMembership(item)){
+			if(head.equals(item)){
+				return tail;
+			} else {
+				return previous(item);
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public ListItem delete(ListItem item, boolean next) {
-		// TODO Auto-generated method stub
+		if(checkMembership(item)){
+			ListItem tmpPrev = item.prev;
+			ListItem tmpNext = item.next;
+			tmpPrev.next = tmpNext;
+			tmpNext.prev = tmpPrev;
+			if(next){
+				return tmpNext;
+			} else {
+				return tmpPrev;
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public ListItem cyclicDelete(ListItem item, boolean next) {
-		// TODO Auto-generated method stub
+		if(checkMembership(item)){
+			if(item.equals(head) && head.next == null){ // only one item in list
+				clear();
+				return null;
+			} else {
+				ListItem tmpPrev = cyclicPrevious(item);
+				ListItem tmpNext = cyclicNext(item);
+				// the following two can be null...
+				ListItem realPrev = item.prev;
+				ListItem realNext = item.next;
+				if(realPrev != null){ // thus it is tested here...
+					realPrev.next = realNext;
+				}
+				if(realNext != null){
+					realNext.prev = realPrev;
+				}
+				if(next){
+					return tmpNext;
+				} else {
+					return tmpPrev;
+				}
+			}
+		}
 		return null;
 	}
 
