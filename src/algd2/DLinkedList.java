@@ -104,23 +104,35 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem head() {
-		return head;
+		return head; // null is allowed
 	}
 
 	@Override
 	public ListItem tail() {
-		return tail;
+		return tail; // null is allowed
 	}
 
 	@Override
 	public ListItem next(ListItem item) {
-		// TODO Auto-generated method stub
+		if(item.parent.equals(this)){ // item is in this list
+			if(this.tail.equals(item)){
+				return null;
+			} else {
+				return item.next;
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public ListItem previous(ListItem item) {
-		// TODO Auto-generated method stub
+		if(item.parent.equals(this)){
+			if(this.head.equals(item)){
+				return null;
+			} else {
+				return item.prev;
+			}
+		}
 		return null;
 	}
 
