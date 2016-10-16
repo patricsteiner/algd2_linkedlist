@@ -197,48 +197,18 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem delete(ListItem item, boolean next) {
-		//TODO this most likely won't work
-		if(checkMembership(item)){
-			ListItem tmpPrev = item.prev;
-			ListItem tmpNext = item.next;
-			tmpPrev.next = tmpNext;
-			tmpNext.prev = tmpPrev;
-			if(next){
-				return tmpNext;
-			} else {
-				return tmpPrev;
-			}
-		}
-		return null;
+		assert checkMembership(item);
+		ListItem ret = next ? item.next : item.prev;
+		unlink(item);
+		return ret;
 	}
 
 	@Override
 	public ListItem cyclicDelete(ListItem item, boolean next) {
-		//TODO refactor, use given methods
-		if(checkMembership(item)){
-			if(item.equals(head) && head.next == null){ // only one item in list
-				clear();
-				return null;
-			} else {
-				ListItem tmpPrev = cyclicPrevious(item);
-				ListItem tmpNext = cyclicNext(item);
-				// the following two can be null...
-				ListItem realPrev = item.prev;
-				ListItem realNext = item.next;
-				if(realPrev != null){ // thus it is tested here...
-					realPrev.next = realNext;
-				}
-				if(realNext != null){
-					realNext.prev = realPrev;
-				}
-				if(next){
-					return tmpNext;
-				} else {
-					return tmpPrev;
-				}
-			}
-		}
-		return null;
+		assert checkMembership(item);
+		ListItem ret = next ? cyclicNext(item) : cyclicPrevious(item);
+		unlink(item);
+		return size == 0 ? null : ret;
 	}
 
 	@Override
