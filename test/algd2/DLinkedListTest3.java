@@ -31,7 +31,7 @@ public class DLinkedListTest3 {
 		l1.linkInAfter(l1.head(), l2.unlink(l2.head()));
 		ListItem i = l1.next(l1.next(l1.head()));
 		l1.unlink(i);
-		l1.reverse();
+		//l1.reverse();
 		System.out.println(l1);
 		System.out.println(l2);
 		

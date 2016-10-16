@@ -1,17 +1,18 @@
 package algd2;
 
 import java.util.AbstractList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
-
 
 public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
-	public final class ListItem<E> {
+	public final class ListItem<T extends E> {
 		private DLinkedList<E> parent;
 		private ListItem<E> next;
 		private ListItem<E> prev;
 		private E data;
-		private ListItem(E data) {
+		private ListItem(DLinkedList<E> parent, E data) {
+			this.parent = parent;
 			this.data = data;
 		}
 		private ListItem(DLinkedList<E> parent, ListItem<E> next, ListItem<E> prev, E data) {
@@ -23,52 +24,74 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	}
 
 	private int size;
+	private long modCount;
 	private ListItem<E> head;
 	private ListItem<E> tail;
 	
 	public final void linkInFront(ListItem<E> item) {
-		assert item != null;
-		addMember(item);
-		if (head != null) {
-			head.prev = item;
-			item.next = head;
-		} else {
+		assert checkMembership(item);
+		if (head == null) {
 			tail = item;
 			item.next = null;
+		} else {
+			head.prev = item;
+			item.next = head;
 		}
+		if (item.prev != null) item.prev.next = null; //make sure item is unlinked in both directions
 		item.prev = null;
 		head = item;
 		size++;
+		modCount++;
 	}
 	
 	public final void linkInBack(ListItem<E> item) {
-		linkInAfter(tail, item);
+		assert checkMembership(item);
+		if (tail == null) {
+			head = item;
+			item.prev = null;
+		} else {
+			tail.next = item;
+			item.prev = tail;
+		}
+		if (item.next != null) item.next.prev = null; //make sure item is unlinked in both directions
+		item.next = null;
+		tail = item;
+		size++;
+		modCount++;
+	}
+	
+	public final void linkInBefore(ListItem<E> next, ListItem<E> item) {
+		assert checkMembership(next) && checkMembership(item);
+		if (next == head) {
+			linkInFront(item);
+		}
+		else {
+			next.prev.next = item;
+			item.prev = next.prev;
+			item.next = next;
+			next.prev = item;
+			size++;
+			modCount++;
+		}
 	}
 	
 	public final void linkInAfter(ListItem<E> prev, ListItem<E> item) {
-		assert item != null && prev != null;
-		if (!checkMembership(prev)) {
-			throw new IllegalArgumentException("Prev must belong to this list.");
-		}
-		addMember(item);
-		if (prev.next != null) {
-			prev.next.prev = item;
-			item.next = prev.next;
+		assert checkMembership(prev) && checkMembership(item);
+		if (prev == tail) {
+			linkInBack(item);
 		}
 		else {
-			item.next = null;
-			tail = item;
+			prev.next.prev = item;
+			item.next = prev.next;
+			prev.next = item;
+			item.prev = prev;
+			size++;
+			modCount++;
 		}
-		item.prev = prev;
-		prev.next = item;
-		size++;
 	}
 	
 	public final ListItem<E> unlink(ListItem<E> item) {
-		assert item != null;
-		if (!checkMembership(item)) {
-			throw new IllegalArgumentException("Item must belong to this list.");
-		}
+		assert checkMembership(item);
 		if (item.prev != null && item.next != null) {
 			item.prev.next = item.next;
 			item.next.prev = item.prev;
@@ -85,17 +108,24 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		item.prev = null;
 		item.next = null;
 		size--;
+		modCount++;
 		return item;
 	}
 	
-	private void addMember(ListItem<E> item) {
-		if (item.parent == null) {
-			item.parent = this;
-		}
-		else if (item.parent != this) {
-			throw new IllegalArgumentException("Cannot assign ListElement of other List to this List. Unlink first.");
-		}
-	}
+//	private void addMember(ListItem<E> item) {
+//		if (item.parent == null) {
+//			item.parent = this;
+//		}
+//		else if (item.parent != this) {
+//			throw new IllegalArgumentException("Cannot assign ListElement of other List to this List. Unlink first.");
+//		}
+//	}
+	
+//	private void makeSureItemIsMember(ListItem item) {
+//		if (!checkMembership(item)) {
+//			throw new IllegalArgumentException("Item must belong to this list.");
+//		}
+//	}
 	
 	@Override
 	public boolean checkMembership(ListItem item) {
@@ -104,12 +134,12 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem head() {
-		return head; // null is allowed
+		return head;
 	}
 
 	@Override
 	public ListItem tail() {
-		return tail; // null is allowed
+		return tail;
 	}
 
 	@Override
@@ -126,30 +156,29 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem cyclicNext(ListItem item) {
-		if(checkMembership(item)){
-			if(tail.equals(item)){
-				return head;
-			} else {
-				return next(item);
-			}
+		assert checkMembership(item);
+		if (item == tail) {
+			return head;
 		}
-		return null;
+		else {
+			return item.next;
+		}
 	}
 
 	@Override
 	public ListItem cyclicPrevious(ListItem item) {
-		if(checkMembership(item)){
-			if(head.equals(item)){
-				return tail;
-			} else {
-				return previous(item);
-			}
+		assert checkMembership(item);
+		if (item == head) {
+			return tail;
 		}
-		return null;
+		else {
+			return item.prev;
+		}
 	}
 
 	@Override
 	public ListItem delete(ListItem item, boolean next) {
+		//TODO there's no way this works
 		if(checkMembership(item)){
 			ListItem tmpPrev = item.prev;
 			ListItem tmpNext = item.next;
@@ -166,6 +195,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem cyclicDelete(ListItem item, boolean next) {
+		//TODO refactor
 		if(checkMembership(item)){
 			if(item.equals(head) && head.next == null){ // only one item in list
 				clear();
@@ -194,47 +224,49 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public E get(ListItem item) {
-		// TODO Auto-generated method stub
-		return null;
+		assert checkMembership(item);
+		return (E) item.data;
 	}
 
 	@Override
 	public void set(ListItem item, E data) {
-		// TODO Auto-generated method stub
-		
+		assert checkMembership(item);
+		item.data = data;
 	}
 
 	@Override
 	public E remove(ListItem item) {
-		// TODO Auto-generated method stub
-		return null;
+		assert checkMembership(item);
+		unlink(item);
+		return (E) item.data;
 	}
 
 	@Override
 	public ListItem addHead(E data) {
-		ListItem<E> item = new ListItem<>(data);
+		ListItem<E> item = new ListItem<>(this, data);
 		linkInFront(item);
 		return item;
 	}
 
 	@Override
 	public ListItem addTail(E data) {
-		ListItem<E> item = new ListItem<>(data);
+		ListItem<E> item = new ListItem<>(this, data);
 		linkInBack(item);
 		return item;
 	}
 
 	@Override
 	public ListItem addAfter(ListItem item, E data) {
-		ListItem<E> newitem = new ListItem<>(data);
+		ListItem<E> newitem = new ListItem<>(this, data);
 		linkInAfter(item, newitem);
 		return newitem;
 	}
 
 	@Override
 	public ListItem addBefore(ListItem item, E data) {
-		// TODO Auto-generated method stub
-		return null;
+		ListItem<E> newitem = new ListItem<>(this, data);
+		linkInBefore(item, newitem);
+		return newitem;
 	}
 
 	@Override
@@ -263,57 +295,105 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public void reverse() {
-		linkInFront(tail);
+		//linkInFront(tail);
 		
 	}
 
 	@Override
 	public void addAfter(ListItem item, List<E> list) {
-		// TODO Auto-generated method stub
-		
+		assert item == null || item.parent == this && list != null && list != this;
+		if (item == null || item == tail) {
+			conc(list, true);
+		}
+		else if (list instanceof IList) {
+			//TODO: update parents, size, modcount
+			item.next.prev = ((IList) list).tail();
+			((IList) list).tail().next = item.next;
+			item.next = ((IList) list).head();
+			((IList) list).head().prev = item;
+		}
+		else {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	@Override
 	public void addBefore(ListItem item, List<E> list) {
-		// TODO Auto-generated method stub
-		
+		assert item == null || item.parent == this && list != null && list != this;
+		if (item == null || item == head) {
+			conc(list, false);
+		}
+		else if (list instanceof IList) {
+			//TODO: update parents, size, modcount
+			item.prev.next = ((IList) list).head();
+			((IList) list).head().prev = item.prev;
+			((IList) list).tail().next = item;
+			item.prev = ((IList) list).tail();
+		}
+		else {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	@Override
 	public void conc(List<E> list, boolean after) {
-		// TODO Auto-generated method stub
-		
+		assert list != null && list != this;
+		if (list instanceof IList) {
+			//TODO: update parents, size, modcount
+			if (after) {
+				tail.next = ((IList) list).head();
+				((IList) list).head().prev = tail;
+				tail = ((IList) list).tail();
+			}
+			else {
+				((IList) list).tail().next = head;
+				head.prev = ((IList) list).tail();
+				head = ((IList) list).head();
+			}
+		}
+		else {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	@Override
 	public IList<E> remove(ListItem startInclusive, ListItem endExclusive) {
-		// TODO Auto-generated method stub
+		assert checkMembership(startInclusive) && checkMembership(endExclusive);
+		//TODO
 		return null;
 	}
 
 	@Override
 	public IListIterator<E> listIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return new DLinkedListIterator<>();
 	}
 
 	@Override
 	public IListIterator<E> listIterator(int index) {
-		// TODO Auto-generated method stub
-		return null;
+		return new DLinkedListIterator<>(index);
 	}
 
 	@Override
 	public E get(int index) {
-		// TODO Auto-generated method stub
-		return null;
+		int i = 0;
+		ListItem<E> item = head;
+		while (item.next != null && i < index) {
+			item = item.next;
+			index++;
+		}
+		return item.data;
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size;
 	}
+	
+	@Override
+    public boolean add(E element) {
+		return addTail(element) != null;
+    }
+	
 	
 	@Override
 	public String toString() {
@@ -327,5 +407,111 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		sb.append("]");
 		return sb.toString();
 	}
+	
+	private class DLinkedListIterator<T extends E> implements IListIterator<E> {
 
+		private int index;
+		private ListItem<E> next;
+		private ListItem<E> returned;
+		private long curModCount;
+		
+		private DLinkedListIterator() {
+			curModCount = modCount;
+			next = head;
+		}
+		
+		private DLinkedListIterator(int index) {
+			this();
+			int i = 0;
+			while (hasNext() && i < index) {
+				returned = next;
+				next = returned.next;
+				i++;
+			}
+			this.index = index;
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return next != null;
+		}
+		
+		@Override
+		public E next() {
+			if (hasNext()) {
+				E data = next.data;
+				returned = next;
+				next = returned.next;
+				index++;
+				return data;
+			}
+			return null;
+		}
+		
+		@Override
+		public boolean hasPrevious() {
+			return next.prev != null;
+		}
+		
+		@Override
+		public E previous() {
+			if (hasPrevious()) {
+				E data = next.prev.data;
+				returned = next.prev;
+				next = returned;
+				index--;
+				return data;
+			}
+			return null;
+		}
+		
+		@Override
+		public int nextIndex() {
+			return index + 1;
+		}
+		
+		@Override
+		public int previousIndex() {
+			return index - 1;
+		}
+		
+		@Override
+		public void remove() {
+			if (curModCount != modCount) throw new ConcurrentModificationException();
+			if (returned == null) {
+				throw new IllegalStateException();
+			}
+			else {
+				if (returned == next) {
+					next = returned.next;
+			} else {
+					index--;
+				}
+				DLinkedList.this.remove(returned);
+				returned = null;
+				modCount++;
+			}
+		}
+		
+		@Override
+		public void set(E e) {
+			if (returned == null) {
+				throw new IllegalStateException();
+			}
+			else {
+				returned.data = e;
+			}
+		}
+		
+		@Override
+		public void add(E e) {
+			addBefore(next, e);
+			//TODO curmod check
+		}
+		
+		@Override
+		public ListItem getVisited() {
+			return returned;
+		}
+	}
 }
