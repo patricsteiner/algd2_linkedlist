@@ -24,7 +24,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	}
 
 	private int size;
-	private long modCount;
+	//private long modCount;
 	private ListItem<E> head;
 	private ListItem<E> tail;
 	
@@ -104,12 +104,31 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 			item.next.prev = null;
 			head = item.next;
 		}
+		else {
+			head= null;
+			tail = null;
+		}
 		item.parent = null;
 		item.prev = null;
 		item.next = null;
 		size--;
 		modCount++;
 		return item;
+	}
+	
+	private void makeEmpty() {
+		size = 0;
+		head = null;
+		tail = null;
+		modCount++;
+	}
+	
+	private void makeMembers(IList list) {
+		ListItem i = (list).head();
+		while(i != null) {
+			i.parent = this;
+			i = i.next;
+		}
 	}
 	
 //	private void addMember(ListItem<E> item) {
@@ -324,11 +343,14 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 			conc(list, true);
 		}
 		else if (list instanceof IList) {
-			//TODO: update parents, size, modcount
+			makeMembers((IList) list);
 			item.next.prev = ((IList) list).tail();
 			((IList) list).tail().next = item.next;
 			item.next = ((IList) list).head();
 			((IList) list).head().prev = item;
+			size += list.size();
+			((DLinkedList<E>) list).makeEmpty();
+			modCount++;
 		}
 		else {
 			throw new UnsupportedOperationException();
@@ -342,11 +364,14 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 			conc(list, false);
 		}
 		else if (list instanceof IList) {
-			//TODO: update parents, size, modcount
+			makeMembers((IList) list);
 			item.prev.next = ((IList) list).head();
 			((IList) list).head().prev = item.prev;
 			((IList) list).tail().next = item;
 			item.prev = ((IList) list).tail();
+			size += list.size();
+			((DLinkedList<E>) list).makeEmpty();
+			modCount++;
 		}
 		else {
 			throw new UnsupportedOperationException();
@@ -357,7 +382,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	public void conc(List<E> list, boolean after) {
 		assert list != null && list != this;
 		if (list instanceof IList) {
-			//TODO: update parents, size, modcount
+			makeMembers((IList) list);
 			if (after) {
 				tail.next = ((IList) list).head();
 				((IList) list).head().prev = tail;
@@ -368,6 +393,9 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 				head.prev = ((IList) list).tail();
 				head = ((IList) list).head();
 			}
+			size += list.size();
+			((DLinkedList<E>) list).makeEmpty();
+			modCount++;
 		}
 		else {
 			throw new UnsupportedOperationException();
@@ -377,10 +405,20 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	@Override
 	public IList<E> remove(ListItem startInclusive, ListItem endExclusive) {
 		assert checkMembership(startInclusive) && checkMembership(endExclusive);
-		//TODO
-		return null;
+		ListItem<E> i = startInclusive;
+		DLinkedList<E> removedItems = new DLinkedList<>();
+		while (i != endExclusive) {
+			i = cyclicDelete(i, true);
+			removedItems.linkInBack(i);
+		}
+		return removedItems;
 	}
 
+	@Override
+	public IListIterator<E> iterator() {
+		return listIterator();
+	}
+	
 	@Override
 	public IListIterator<E> listIterator() {
 		return new DLinkedListIterator<>();
