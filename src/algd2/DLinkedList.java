@@ -21,6 +21,10 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 			this.prev = prev;
 			this.data = data;
 		}
+		@Override
+		public String toString() {
+			return data.toString();
+		}
 	}
 
 	private int size;
@@ -247,41 +251,43 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	@Override
 	public ListItem addAfter(ListItem item, E data) {
 		ListItem<E> newitem = new ListItem<>(this, data);
-		linkInAfter(item, newitem);
+		if (item == null) linkInFront(newitem);
+		else linkInAfter(item, newitem);
 		return newitem;
 	}
 
 	@Override
 	public ListItem addBefore(ListItem item, E data) {
 		ListItem<E> newitem = new ListItem<>(this, data);
-		linkInBefore(item, newitem);
+		if (item == null) linkInBack(newitem);
+		else linkInBefore(item, newitem);
 		return newitem;
 	}
 
 	@Override
 	public void moveToHead(ListItem item) {
-		if (checkMembership(item)) {
-			unlink(item);
-			linkInFront(item);
-		}
+		unlink(item);
+		item.parent = this;
+		linkInFront(item);
 	}
 
 	@Override
 	public void moveToTail(ListItem item) {
-		if (checkMembership(item)) {
-			unlink(item);
-			linkInBack(item);
-		}
+		unlink(item);
+		item.parent = this;
+		linkInBack(item);
 	}
 
 	@Override
 	public void rotate(ListItem item) {
-		if (checkMembership(item) && item != head) {
-			tail = item.prev;
-			item.prev.next = null;
-			head = item;
-			item.prev = null;
-		}
+		assert checkMembership(item);
+		if (item.prev == null) return; //if it's already head: no need to do anything
+		item.prev.next = null;
+		item.prev = null;
+		tail.next = head;
+		head.prev = tail;
+		tail = head;
+		head = item;
 	}
 
 	@Override
@@ -308,6 +314,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public void addAfter(ListItem item, List<E> list) {
+		//shouldn't the second parameter be of type IList?
 		assert item == null || item.parent == this && list != null && list != this;
 		if (item == null || item == tail) {
 			conc(list, true);
@@ -377,9 +384,23 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		assert checkMembership(startInclusive) && checkMembership(endExclusive);
 		ListItem<E> i = startInclusive;
 		DLinkedList<E> removedItems = new DLinkedList<>();
-		while (i != endExclusive) {
-			i = cyclicDelete(i, true);
-			removedItems.linkInBack(i);
+		if (startInclusive == endExclusive) {
+			removedItems.size = size;
+			removedItems.head = head;
+			removedItems.tail = tail;
+			i = removedItems.head;
+			while (i != null) {
+				i.parent = removedItems;
+				i = i.next;
+			}
+			makeEmpty();
+		} else {
+			while (i != endExclusive) {
+				ListItem tmp = i;
+				i = cyclicDelete(i, true);
+				tmp.parent = removedItems;
+				removedItems.linkInBack(tmp);
+			}
 		}
 		return removedItems;
 	}
@@ -515,7 +536,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 				}
 				DLinkedList.this.remove(returned);
 				returned = null;
-				modCount++;
+				curModCount++;
 			}
 		}
 		
