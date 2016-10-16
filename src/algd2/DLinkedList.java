@@ -28,7 +28,6 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	}
 
 	private int size;
-	//private long modCount;
 	private ListItem<E> head;
 	private ListItem<E> tail;
 	
@@ -292,24 +291,25 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public void swap(ListItem item1, ListItem item2) {
-		if (checkMembership(item1) && checkMembership(item2) && !item1.equals(item2)) {
-			if (item1 == head) head = item2;
-			else if (item2 == head) head = item1;
-			if (item1 == tail) tail = item2;
-			else if (item2 == tail) tail = item1;
-			ListItem tmpPrev = item1.prev;
-			ListItem tmpNext = item1.next;
-			item1.prev = item2.prev;
-			item1.next = item2.next;
-			item2.prev = tmpPrev;
-			item2.next = tmpNext;
-		}
+		assert checkMembership(item1) && checkMembership(item2);
+		if (item1 == item2) return; //no need to do anything
+		//just swapping the data of the items, because it would be way too complex 
+		//and thus inefficient to swap the actual items (lots of special cases!)
+		E tmp = (E) item1.data;
+		item1.data = item2.data;
+		item2.data = tmp;
 	}
 
 	@Override
 	public void reverse() {
-		//linkInFront(tail);
-		//TODO
+		ListItem first = head;
+		ListItem last = tail;
+		for (int i = 0; i < size >> 1; i++) {
+			swap(first,last);
+			first = first.next;
+			last = last.prev;
+			i++;
+		}
 	}
 
 	@Override
