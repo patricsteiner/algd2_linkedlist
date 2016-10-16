@@ -178,7 +178,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem delete(ListItem item, boolean next) {
-		//TODO there's no way this works
+		//TODO this most likely won't work
 		if(checkMembership(item)){
 			ListItem tmpPrev = item.prev;
 			ListItem tmpNext = item.next;
@@ -195,7 +195,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public ListItem cyclicDelete(ListItem item, boolean next) {
-		//TODO refactor
+		//TODO refactor, use given methods
 		if(checkMembership(item)){
 			if(item.equals(head) && head.next == null){ // only one item in list
 				clear();
@@ -271,32 +271,50 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	@Override
 	public void moveToHead(ListItem item) {
-		// TODO Auto-generated method stub
-		
+		if (checkMembership(item)) {
+			unlink(item);
+			linkInFront(item);
+		}
 	}
 
 	@Override
 	public void moveToTail(ListItem item) {
-		// TODO Auto-generated method stub
-		
+		if (checkMembership(item)) {
+			unlink(item);
+			linkInBack(item);
+		}
 	}
 
 	@Override
 	public void rotate(ListItem item) {
-		// TODO Auto-generated method stub
-		
+		if (checkMembership(item) && item != head) {
+			tail = item.prev;
+			item.prev.next = null;
+			head = item;
+			item.prev = null;
+		}
 	}
 
 	@Override
 	public void swap(ListItem item1, ListItem item2) {
-		// TODO Auto-generated method stub
-		
+		if (checkMembership(item1) && checkMembership(item2) && !item1.equals(item2)) {
+			if (item1 == head) head = item2;
+			else if (item2 == head) head = item1;
+			if (item1 == tail) tail = item2;
+			else if (item2 == tail) tail = item1;
+			ListItem tmpPrev = item1.prev;
+			ListItem tmpNext = item1.next;
+			item1.prev = item2.prev;
+			item1.next = item2.next;
+			item2.prev = tmpPrev;
+			item2.next = tmpNext;
+		}
 	}
 
 	@Override
 	public void reverse() {
 		//linkInFront(tail);
-		
+		//TODO
 	}
 
 	@Override
