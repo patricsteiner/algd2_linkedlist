@@ -134,21 +134,6 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		}
 	}
 	
-//	private void addMember(ListItem<E> item) {
-//		if (item.parent == null) {
-//			item.parent = this;
-//		}
-//		else if (item.parent != this) {
-//			throw new IllegalArgumentException("Cannot assign ListElement of other List to this List. Unlink first.");
-//		}
-//	}
-	
-//	private void makeSureItemIsMember(ListItem item) {
-//		if (!checkMembership(item)) {
-//			throw new IllegalArgumentException("Item must belong to this list.");
-//		}
-//	}
-	
 	@Override
 	public boolean checkMembership(ListItem item) {
 		return item != null && item.parent == this;
@@ -287,6 +272,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		head.prev = tail;
 		tail = head;
 		head = item;
+		modCount++;
 	}
 
 	@Override
@@ -298,6 +284,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		E tmp = (E) item1.data;
 		item1.data = item2.data;
 		item2.data = tmp;
+		modCount++;
 	}
 
 	@Override
@@ -447,7 +434,6 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		return addTail(element) != null;
     }
 	
-	
 	@Override
 	public String toString() {
 		ListItem<E> i = head;
@@ -484,8 +470,13 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 			this.index = index;
 		}
 		
+		private void checkModCount() {
+			if (curModCount != modCount) throw new ConcurrentModificationException();
+		}
+		
 		@Override
 		public boolean hasNext() {
+			checkModCount();
 			return next != null;
 		}
 		
@@ -503,6 +494,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		
 		@Override
 		public boolean hasPrevious() {
+			checkModCount();
 			return next.prev != null;
 		}
 		
@@ -530,7 +522,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		
 		@Override
 		public void remove() {
-			if (curModCount != modCount) throw new ConcurrentModificationException();
+			checkModCount();
 			if (returned == null) {
 				throw new IllegalStateException();
 			}
@@ -548,6 +540,7 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		
 		@Override
 		public void set(E e) {
+			checkModCount();
 			if (returned == null) {
 				throw new IllegalStateException();
 			}
@@ -558,8 +551,8 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 		
 		@Override
 		public void add(E e) {
+			checkModCount();
 			addBefore(next, e);
-			//TODO curmod check
 		}
 		
 		@Override
