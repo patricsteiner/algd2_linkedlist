@@ -4,6 +4,14 @@ import java.util.AbstractList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 
+/**
+ * 
+ * @author Patric Steiner, Sebastian Zimmermann, Jan Hitz
+ *
+ * This Doubly Linked List provides a way to operate directly on the list items,
+ * which results in a performance increase in several operations.
+ * 
+ */
 public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 
 	public final class ListItem<T extends E> {
