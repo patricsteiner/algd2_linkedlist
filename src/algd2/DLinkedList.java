@@ -316,7 +316,10 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	public void addAfter(ListItem item, List<E> list) {
 		//shouldn't the second parameter be of type IList?
 		assert item == null || item.parent == this && list != null && list != this;
-		if (item == null || item == tail) {
+		if (item == null) {
+			conc(list, false);
+		}
+		else if (item == tail) {
 			conc(list, true);
 		}
 		else if (list instanceof IList) {
@@ -337,7 +340,10 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	@Override
 	public void addBefore(ListItem item, List<E> list) {
 		assert item == null || item.parent == this && list != null && list != this;
-		if (item == null || item == head) {
+		if (item == null) {
+			conc(list, true);
+		}
+		else if (item == head) {
 			conc(list, false);
 		}
 		else if (list instanceof IList) {
