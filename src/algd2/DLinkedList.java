@@ -293,11 +293,35 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	public void swap(ListItem item1, ListItem item2) {
 		assert checkMembership(item1) && checkMembership(item2);
 		if (item1 == item2) return; //no need to do anything
+		ListItem item1Copy = new ListItem(this, item1.data);
+		ListItem item2Copy = new ListItem(this, item2.data);
+		// replace item1 with item2Copy
+		if(item1 != head){
+			item1.prev.next = item2Copy;
+			item2Copy.prev = item1.prev;
+		}
+		if(item1 != tail){
+			item2Copy.next = item1.next;
+			item1.next.prev = item2Copy;
+		}
+		unlink(item1);
+		// replace item2 with item1Copy
+		if(item2 != head){
+			item2.prev.next = item1Copy;
+			item1Copy.prev = item2.prev;
+		}
+		if(item2 != tail){
+			item1Copy.next = item2.next;
+			item2.next.prev = item1Copy;
+		}
+		unlink(item2);
+		/*
 		//just swapping the data of the items, because it would be way too complex 
 		//and thus inefficient to swap the actual items (lots of special cases!)
 		E tmp = (E) item1.data;
 		item1.data = item2.data;
 		item2.data = tmp;
+		*/
 	}
 
 	@Override
