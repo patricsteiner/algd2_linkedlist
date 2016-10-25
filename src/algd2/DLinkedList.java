@@ -359,7 +359,13 @@ public class DLinkedList<E> extends AbstractList<E> implements IList<E> {
 	@Override
 	public void conc(List<E> list, boolean after) {
 		assert list != null && list != this;
+		if (list.size() < 1) return; //nothing to do
 		if (list instanceof IList) {
+			if (size == 0) {
+			    ListItem item  = ((IList) list).delete(((IList) list).head(), true);
+			    item.parent = this;
+			    linkInFront(item);
+			}
 			makeMembers((IList) list);
 			if (after) {
 				tail.next = ((IList) list).head();
